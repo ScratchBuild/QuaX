@@ -108,7 +108,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: Text(L10n.of(context).accessibility),
             leading: Icon(Icons.settings_accessibility),
             subtitle: Text(
-              L10n.of(context).disable_animations,
+              "${L10n.of(context).text_scale_factor}, ${L10n.of(context).disable_animations}",
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(fontStyle: FontStyle.italic),

@@ -505,10 +505,15 @@
   "accessibility": "Accessibilité",
   "disable_animations": "Désactiver les animations",
   "disable_animations_description": "Désactive les animations dans l'application",
+  "text_scale_factor": "Taille du texte",
+  "text_scale_factor_description": "Ajuste la taille du texte dans l’application",
   "show_navigation_labels": "Afficher les libellés de navigation",
   "loginNameTwitterAcc": "Nom d'utilisateur",
   "passwordTwitterAcc": "Mot de passe",
   "emailTwitterAcc": "e-mail",
   "login": "Connexion",
-  "login_success": "Connexion réussie !"
+  "login_success": "Connexion réussie !",
+  "dismiss": "Ignorer",
+  "view_on_github": "Voir sur GitHub",
+  "view_version_on_github": "Téléchargez la version {version} sur GitHub"
 }

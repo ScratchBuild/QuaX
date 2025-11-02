@@ -62,14 +62,14 @@ Future checkForUpdates(context) async {
           builder: (BuildContext context) {
             return AlertDialog(
               title: Text(L10n.of(context).an_update_for_fritter_is_available),
-              content: Text('View version ${map["tag_name"]} on Github'),
+              content: Text(L10n.of(context).view_version_on_github(map["tag_name"])),
               actions: [
                 TextButton(
-                  child: const Text('Dismiss'),
+                  child: Text(L10n.of(context).dismiss),
                   onPressed: () => Navigator.of(context).pop(),
                 ),
                 TextButton(
-                  child: const Text('View on GitHub'),
+                  child: Text(L10n.of(context).view_on_github),
                   onPressed: () async {
                     await openUri(map['html_url']);
                     Navigator.of(context).pop();
@@ -186,6 +186,7 @@ Future<void> main() async {
 
   final prefService = await PrefServiceShared.init(prefix: 'pref_', defaults: {
     optionDisableAnimations: false,
+    optionTextScaleFactor: 1.0,
     optionDisableScreenshots: false,
     optionDownloadPath: '',
     optionDownloadType: optionDownloadTypeAsk,
@@ -271,13 +272,14 @@ class _FritterAppState extends State<FritterApp> {
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>(); // NEW: Navigator key
 
   String _themeMode = 'system';
-  String _themeColor = 'orange';
+  String _themeColor = 'accent';
   bool _disableAnimations = false;
-  bool _trueBlack = false;
+  bool _trueBlack = true;
   bool _checkUpdates = false;
   bool _updateDialogShown = false;
   bool _accountDialogShown = false;
   bool _isSecure = false;
+  double _textScaleFactor = 1.0;
   Locale? _locale;
 
   @override
@@ -308,6 +310,7 @@ class _FritterAppState extends State<FritterApp> {
       _disableAnimations = prefService.get(optionDisableAnimations);
       _checkUpdates = prefService.get(optionShouldCheckForUpdates);
       _isSecure = prefService.get(optionDisableScreenshots);
+      _textScaleFactor = prefService.get(optionTextScaleFactor);
     });
 
     prefService.addKeyListener(optionShouldCheckForUpdates, () {
@@ -344,6 +347,12 @@ class _FritterAppState extends State<FritterApp> {
         _isSecure = prefService.get(optionDisableScreenshots);
       });
     });
+
+    prefService.addKeyListener(optionTextScaleFactor, () {
+      setState(() {
+        _textScaleFactor = prefService.get<double?>(optionTextScaleFactor) ?? 1.0;
+      });
+    });
   }
 
   @override
@@ -368,142 +377,146 @@ class _FritterAppState extends State<FritterApp> {
     final systemOverlayStyle = SystemUiOverlayStyle.dark.copyWith(systemNavigationBarColor: Colors.transparent);
     SystemChrome.setSystemUIOverlayStyle(systemOverlayStyle);
 
-    return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
-      return Portal(
-          child: SecureWidget(
-              isSecure: _isSecure,
-              builder: (BuildContext context, a, b) => MaterialApp(
-                    navigatorKey: _navigatorKey,
-                    localeListResolutionCallback: (locales, supportedLocales) {
-                      List supportedLocalesCountryCode = [];
-                      for (var item in supportedLocales) {
-                        supportedLocalesCountryCode.add(item.countryCode);
-                      }
+    return MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(_textScaleFactor),
+        ),
+        child: DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+          return Portal(
+              child: SecureWidget(
+                  isSecure: _isSecure,
+                  builder: (BuildContext context, a, b) => MaterialApp(
+                        navigatorKey: _navigatorKey,
+                        localeListResolutionCallback: (locales, supportedLocales) {
+                          List supportedLocalesCountryCode = [];
+                          for (var item in supportedLocales) {
+                            supportedLocalesCountryCode.add(item.countryCode);
+                          }
 
-                      List supportedLocalesLanguageCode = [];
-                      for (var item in supportedLocales) {
-                        supportedLocalesLanguageCode.add(item.languageCode);
-                      }
+                          List supportedLocalesLanguageCode = [];
+                          for (var item in supportedLocales) {
+                            supportedLocalesLanguageCode.add(item.languageCode);
+                          }
 
-                      locales!;
-                      List localesCountryCode = [];
-                      for (var item in locales) {
-                        localesCountryCode.add(item.countryCode);
-                      }
+                          locales!;
+                          List localesCountryCode = [];
+                          for (var item in locales) {
+                            localesCountryCode.add(item.countryCode);
+                          }
 
-                      List localesLanguageCode = [];
-                      for (var item in locales) {
-                        localesLanguageCode.add(item.languageCode);
-                      }
+                          List localesLanguageCode = [];
+                          for (var item in locales) {
+                            localesLanguageCode.add(item.languageCode);
+                          }
 
-                      for (var i = 0; i < locales.length; i++) {
-                        if (supportedLocalesCountryCode.contains(localesCountryCode[i]) &&
-                            supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
-                          log.info('Yes country: ${localesCountryCode[i]}, ${localesLanguageCode[i]}');
-                          return Locale(localesLanguageCode[i], localesCountryCode[i]);
-                        } else if (supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
-                          log.info('Yes language: ${localesLanguageCode[i]}');
-                          return Locale(localesLanguageCode[i]);
-                        } else {
-                          log.info('Nothing');
-                        }
-                      }
-                      return const Locale('en');
-                    },
-                    localizationsDelegates: const [
-                      L10n.delegate,
-                      GlobalMaterialLocalizations.delegate,
-                      GlobalWidgetsLocalizations.delegate,
-                      GlobalCupertinoLocalizations.delegate,
-                    ],
-                    supportedLocales: L10n.delegate.supportedLocales,
-                    locale: _locale,
-                    title: 'QuaX',
-                    theme: ThemeData(
-                      colorScheme: _themeColor == 'accent'
-                          ? lightDynamic
-                          : ColorScheme.fromSeed(
-                              seedColor:
-                                  themeColors[_themeColor]!.harmonizeWith(lightDynamic?.primary ?? Colors.transparent),
-                              brightness: Brightness.light),
-                      pageTransitionsTheme: _disableAnimations == true
-                          ? PageTransitionsTheme(
-                              builders: {
-                                TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
-                                TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
-                              },
-                            )
-                          : null,
-                      useMaterial3: true,
-                    ),
-                    darkTheme: ThemeData(
-                      colorScheme: (_trueBlack == true
-                          ? (_themeColor == 'accent'
+                          for (var i = 0; i < locales.length; i++) {
+                            if (supportedLocalesCountryCode.contains(localesCountryCode[i]) &&
+                                supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
+                              log.info('Yes country: ${localesCountryCode[i]}, ${localesLanguageCode[i]}');
+                              return Locale(localesLanguageCode[i], localesCountryCode[i]);
+                            } else if (supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
+                              log.info('Yes language: ${localesLanguageCode[i]}');
+                              return Locale(localesLanguageCode[i]);
+                            } else {
+                              log.info('Nothing');
+                            }
+                          }
+                          return const Locale('en');
+                        },
+                        localizationsDelegates: const [
+                          L10n.delegate,
+                          GlobalMaterialLocalizations.delegate,
+                          GlobalWidgetsLocalizations.delegate,
+                          GlobalCupertinoLocalizations.delegate,
+                        ],
+                        supportedLocales: L10n.delegate.supportedLocales,
+                        locale: _locale,
+                        title: 'QuaX',
+                        theme: ThemeData(
+                          colorScheme: _themeColor == 'accent'
+                              ? lightDynamic
+                              : ColorScheme.fromSeed(
+                                  seedColor: themeColors[_themeColor]!
+                                      .harmonizeWith(lightDynamic?.primary ?? Colors.transparent),
+                                  brightness: Brightness.light),
+                          pageTransitionsTheme: _disableAnimations == true
+                              ? PageTransitionsTheme(
+                                  builders: {
+                                    TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+                                    TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+                                  },
+                                )
+                              : null,
+                          useMaterial3: true,
+                        ),
+                        darkTheme: ThemeData(
+                          colorScheme: (_trueBlack == true
+                              ? (_themeColor == 'accent'
+                                      ? darkDynamic
+                                      : ColorScheme.fromSeed(
+                                          seedColor: themeColors[_themeColor]!
+                                              .harmonizeWith(darkDynamic?.primary ?? Colors.transparent),
+                                          brightness: Brightness.dark))
+                                  ?.copyWith(surface: Colors.black)
+                              : (_themeColor == 'accent'
                                   ? darkDynamic
                                   : ColorScheme.fromSeed(
                                       seedColor: themeColors[_themeColor]!
                                           .harmonizeWith(darkDynamic?.primary ?? Colors.transparent),
-                                      brightness: Brightness.dark))
-                              ?.copyWith(surface: Colors.black)
-                          : (_themeColor == 'accent'
-                              ? darkDynamic
-                              : ColorScheme.fromSeed(
-                                  seedColor: themeColors[_themeColor]!
-                                      .harmonizeWith(darkDynamic?.primary ?? Colors.transparent),
-                                  brightness: Brightness.dark))),
-                      navigationBarTheme:
-                          (_trueBlack == true ? NavigationBarThemeData(backgroundColor: Colors.black) : null),
-                      scaffoldBackgroundColor: (_trueBlack == true ? Colors.black : null),
-                      appBarTheme: (_trueBlack == true ? AppBarThemeData(backgroundColor: Colors.black) : null),
-                      pageTransitionsTheme: _disableAnimations == true
-                          ? PageTransitionsTheme(
-                              builders: {
-                                TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
-                                TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
-                              },
-                            )
-                          : null,
-                      useMaterial3: true,
-                    ),
-                    themeMode: themeMode,
-                    initialRoute: '/',
-                    routes: {
-                      routeHome: (context) => const DefaultPage(),
-                      routeGroup: (context) => const GroupScreen(),
-                      routeProfile: (context) => const ProfileScreen(),
-                      routeSearch: (context) => const ResultsScreen(),
-                      routeSettings: (context) => const SettingsScreen(),
-                      routeSettingsExport: (context) => const SettingsExportScreen(),
-                      routeSettingsHome: (context) => const SettingsHomeFragment(),
-                      routeStatus: (context) => const StatusScreen(),
-                    },
-                    builder: (context, child) {
-                      if (_checkUpdates && !_updateDialogShown) {
-                        _updateDialogShown = true;
-                        // Use navigatorKey's context for showDialog
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          checkForUpdates(_navigatorKey.currentContext!);
-                        });
-                      }
+                                      brightness: Brightness.dark))),
+                          navigationBarTheme:
+                              (_trueBlack == true ? NavigationBarThemeData(backgroundColor: Colors.black) : null),
+                          scaffoldBackgroundColor: (_trueBlack == true ? Colors.black : null),
+                          appBarTheme: (_trueBlack == true ? AppBarThemeData(backgroundColor: Colors.black) : null),
+                          pageTransitionsTheme: _disableAnimations == true
+                              ? PageTransitionsTheme(
+                                  builders: {
+                                    TargetPlatform.android: NoAnimationPageTransitionsBuilder(),
+                                    TargetPlatform.iOS: NoAnimationPageTransitionsBuilder(),
+                                  },
+                                )
+                              : null,
+                          useMaterial3: true,
+                        ),
+                        themeMode: themeMode,
+                        initialRoute: '/',
+                        routes: {
+                          routeHome: (context) => const DefaultPage(),
+                          routeGroup: (context) => const GroupScreen(),
+                          routeProfile: (context) => const ProfileScreen(),
+                          routeSearch: (context) => const ResultsScreen(),
+                          routeSettings: (context) => const SettingsScreen(),
+                          routeSettingsExport: (context) => const SettingsExportScreen(),
+                          routeSettingsHome: (context) => const SettingsHomeFragment(),
+                          routeStatus: (context) => const StatusScreen(),
+                        },
+                        builder: (context, child) {
+                          if (_checkUpdates && !_updateDialogShown) {
+                            _updateDialogShown = true;
+                            // Use navigatorKey's context for showDialog
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              checkForUpdates(_navigatorKey.currentContext!);
+                            });
+                          }
 
-                      if (!_accountDialogShown) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _accountDialogShown = true;
-                          checkForAccounts(_navigatorKey.currentContext!);
-                        });
-                      }
+                          if (!_accountDialogShown) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _accountDialogShown = true;
+                              checkForAccounts(_navigatorKey.currentContext!);
+                            });
+                          }
 
-                      // Replace the default red screen of death with a slightly friendlier one
-                      ErrorWidget.builder = (FlutterErrorDetails details) => FullPageErrorWidget(
-                            error: details.exception,
-                            stackTrace: details.stack,
-                            prefix: L10n.of(context).something_broke_in_fritter,
-                          );
+                          // Replace the default red screen of death with a slightly friendlier one
+                          ErrorWidget.builder = (FlutterErrorDetails details) => FullPageErrorWidget(
+                                error: details.exception,
+                                stackTrace: details.stack,
+                                prefix: L10n.of(context).something_broke_in_fritter,
+                              );
 
-                      return child ?? Container();
-                    },
-                  )));
-    });
+                          return child ?? Container();
+                        },
+                      )));
+        }));
   }
 }
 

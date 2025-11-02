@@ -419,6 +419,8 @@
   "accessibility": "Accessibility",
   "disable_animations": "Disable animations?",
   "disable_animations_description": "Disables animations within the app",
+  "text_scale_factor": "Text size",
+  "text_scale_factor_description": "Set the text size for the entire app",
   "browsingTweets": "Browsing Posts",
   "loginNameTwitterAcc": "Username",
   "passwordTwitterAcc": "Password",
@@ -436,5 +438,8 @@
   "x_client_transaction_id_provider_description": "Set the x-client-transaction-id provider. It must he a domain name, without http/https prefix. For more information about it, check https://github.com/Teskann/x-client-transaction-id-generator",
   "@x_client_transaction_id_provider_description": {},
   "not_logged_in": "You are not logged in",
-  "quax_doesnt_work_without_account_please_login": "QuaX doesn't work without an X account, please login to continue using the app.\n\nX doesn't allow accessing their APIs without an account."
+  "quax_doesnt_work_without_account_please_login": "QuaX doesn't work without an X account, please login to continue using the app.\n\nX doesn't allow accessing their APIs without an account.",
+  "dismiss": "Dismiss",
+  "view_on_github": "View on GitHub",
+  "view_version_on_github": "View version {version} on GitHub"
 }

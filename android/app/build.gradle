@@ -58,7 +58,7 @@ android {
 
     defaultConfig {
         applicationId "com.teskann.quax"
-        minSdkVersion 23
+        minSdkVersion flutter.minSdkVersion
         targetSdkVersion 36
         multiDexEnabled true
         versionCode flutterVersionCode.toInteger()
