@@ -445,5 +445,8 @@
   "loop_videos": "Loop videos",
   "loop_videos_description": "If enabled, videos will loop after completing",
   "autoplay_videos": "Autoplay videos",
-  "autoplay_videos_description": "If enabled, videos will start playing without user interaction"
+  "autoplay_videos_description": "If enabled, videos will start playing without user interaction",
+  "export_accounts": "Export accounts?",
+  "export_accounts_details": "⚠\uFE0F This exports connection cookies of your x.com accounts. Do not share this backup with anyone.",
+  "import_backup": "Import backup"
 }

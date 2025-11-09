@@ -211,7 +211,7 @@ class SubscriptionGroupMember with ToMappable {
   }
 }
 
-class Account {
+class Account with ToMappable {
   final String id;
   final dynamic authHeader;
 
@@ -231,6 +231,7 @@ class Account {
   @override
   int get hashCode => id.hashCode;
 
+  @override
   Map<String, dynamic> toMap() {
     return {'id': id, 'auth_header': authHeader};
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quax/client/client_regular_account.dart';
 import 'package:quax/client/login_webview.dart';
+import 'package:quax/database/entities.dart';
 import 'package:quax/generated/l10n.dart';
 import 'package:quax/client/accounts.dart';
 
@@ -30,21 +31,21 @@ class _SettingsAccountFragment extends State<SettingsAccountFragment> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const LinearProgressIndicator();
             } else {
-              List<Map<String, Object?>> data = snapshot.data;
+              List<Account> data = snapshot.data;
               return ListView.builder(
                   itemCount: data.length,
                   itemBuilder: (BuildContext itemContext, int index) {
                     return Dismissible(
                         key: widget.key!,
                         onDismissed: (DismissDirection direction) async {
-                          await model.deleteAccount(data[index]['id'].toString());
+                          await model.deleteAccount(data[index].id.toString());
                           setState(() {});
                         },
                         child: Card(
                             child: ListTile(
                           title: Text(L10n.of(context).account),
                           subtitle: Text(
-                            data[index]['id'].toString(),
+                            data[index].id.toString(),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),

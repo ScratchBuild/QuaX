@@ -23,6 +23,7 @@ import 'package:quax/profile/profile.dart';
 import 'package:quax/saved/saved_tweet_model.dart';
 import 'package:quax/search/search.dart';
 import 'package:quax/search/search_model.dart';
+import 'package:quax/settings/_data.dart';
 import 'package:quax/settings/_home.dart';
 import 'package:quax/settings/settings.dart';
 import 'package:quax/settings/settings_export_screen.dart';
@@ -99,9 +100,12 @@ Future checkForAccounts(context) async {
           content: Text(L10n.of(context).quax_doesnt_work_without_account_please_login),
           actions: [
             TextButton(
-              child: Text(L10n.of(context).close),
-              onPressed: () {
-                Navigator.of(context).pop();
+              child: Text(L10n.of(context).import_backup),
+              onPressed: () async {
+                await importBackup(context);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
               },
             ),
             TextButton(
@@ -294,11 +298,17 @@ class _FritterAppState extends State<FritterApp> {
       if (locale == null || locale == optionLocaleDefault) {
         _locale = null;
       } else {
-        var splitLocale = locale.split('-');
+        var splitLocale = locale.split(RegExp(r'[-_]'));
         if (splitLocale.length == 1) {
           _locale = Locale(splitLocale[0]);
         } else {
-          _locale = Locale(splitLocale[0], splitLocale[1]);
+          if (splitLocale[1].length == 4) {
+            // 4 characters -> unicode_script_subtag
+            _locale = Locale.fromSubtags(languageCode: splitLocale[0], scriptCode: splitLocale[1]);
+          } else {
+            // Other than 4 characters -> unicode_region_subtag (country)
+            _locale = Locale(splitLocale[0], splitLocale[1]);
+          }
         }
       }
     }
@@ -389,42 +399,6 @@ class _FritterAppState extends State<FritterApp> {
                   isSecure: _isSecure,
                   builder: (BuildContext context, a, b) => MaterialApp(
                         navigatorKey: _navigatorKey,
-                        localeListResolutionCallback: (locales, supportedLocales) {
-                          List supportedLocalesCountryCode = [];
-                          for (var item in supportedLocales) {
-                            supportedLocalesCountryCode.add(item.countryCode);
-                          }
-
-                          List supportedLocalesLanguageCode = [];
-                          for (var item in supportedLocales) {
-                            supportedLocalesLanguageCode.add(item.languageCode);
-                          }
-
-                          locales!;
-                          List localesCountryCode = [];
-                          for (var item in locales) {
-                            localesCountryCode.add(item.countryCode);
-                          }
-
-                          List localesLanguageCode = [];
-                          for (var item in locales) {
-                            localesLanguageCode.add(item.languageCode);
-                          }
-
-                          for (var i = 0; i < locales.length; i++) {
-                            if (supportedLocalesCountryCode.contains(localesCountryCode[i]) &&
-                                supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
-                              log.info('Yes country: ${localesCountryCode[i]}, ${localesLanguageCode[i]}');
-                              return Locale(localesLanguageCode[i], localesCountryCode[i]);
-                            } else if (supportedLocalesLanguageCode.contains(localesLanguageCode[i])) {
-                              log.info('Yes language: ${localesLanguageCode[i]}');
-                              return Locale(localesLanguageCode[i]);
-                            } else {
-                              log.info('Nothing');
-                            }
-                          }
-                          return const Locale('en');
-                        },
                         localizationsDelegates: const [
                           L10n.delegate,
                           GlobalMaterialLocalizations.delegate,

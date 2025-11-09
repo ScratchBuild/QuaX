@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_file_dialog/flutter_file_dialog.dart';
+import 'package:quax/client/accounts.dart';
 import 'package:quax/database/entities.dart';
 import 'package:quax/group/group_model.dart';
 import 'package:quax/saved/saved_tweet_model.dart';
@@ -26,6 +27,7 @@ class _SettingsExportScreenState extends State<SettingsExportScreen> {
   bool _exportSubscriptionGroups = false;
   bool _exportSubscriptionGroupMembers = false;
   bool _exportTweets = false;
+  bool _exportAccounts = false;
 
   void toggleExportSubscriptionGroupMembersIfRequired() {
     if (_exportSubscriptionGroupMembers && (!_exportSubscriptions || !_exportSubscriptionGroups)) {
@@ -69,12 +71,19 @@ class _SettingsExportScreenState extends State<SettingsExportScreen> {
     });
   }
 
+  void toggleExportAccounts() {
+    setState(() {
+      _exportAccounts = !_exportAccounts;
+    });
+  }
+
   bool noExportOptionSelected() {
     return !(_exportSettings ||
         _exportSubscriptions ||
         _exportSubscriptionGroups ||
         _exportSubscriptionGroupMembers ||
-        _exportTweets);
+        _exportTweets ||
+        _exportAccounts);
   }
 
   @override
@@ -97,6 +106,8 @@ class _SettingsExportScreenState extends State<SettingsExportScreen> {
                 var savedTweetModel = context.read<SavedTweetModel>();
                 await savedTweetModel.listSavedTweets();
 
+                List<Account>? accounts = _exportAccounts ? await getAccounts() : null;
+
                 var prefs = PrefService.of(context);
 
                 // TODO: Check exporting
@@ -117,7 +128,8 @@ class _SettingsExportScreenState extends State<SettingsExportScreen> {
                     userSubscriptions: subscriptions?.whereType<UserSubscription>().toList(),
                     subscriptionGroups: subscriptionGroups,
                     subscriptionGroupMembers: subscriptionGroupMembers,
-                    tweets: tweets);
+                    tweets: tweets,
+                    accounts: accounts);
 
                 var exportData = jsonEncode(data.toJson());
 
@@ -168,6 +180,11 @@ class _SettingsExportScreenState extends State<SettingsExportScreen> {
                   value: _exportTweets,
                   title: Text(L10n.of(context).export_tweets),
                   onChanged: (v) => toggleExportTweets()),
+              CheckboxListTile(
+                  value: _exportAccounts,
+                  title: Text(L10n.of(context).export_accounts),
+                  subtitle: Text(L10n.of(context).export_accounts_details),
+                  onChanged: (v) => toggleExportAccounts()),
             ],
           ))),
         ],

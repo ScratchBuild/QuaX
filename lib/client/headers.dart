@@ -63,7 +63,7 @@ class TwitterHeaders {
     if(accounts.isEmpty) {
       return null;
     }
-    Account account = Account.fromMap(accounts[Random().nextInt(accounts.length)]);
+    Account account = accounts[Random().nextInt(accounts.length)];
     final authHeader = Map.castFrom<String, dynamic, String, String>(json.decode(account.authHeader));
     return authHeader;
   }

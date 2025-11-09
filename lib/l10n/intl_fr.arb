@@ -519,5 +519,8 @@
   "loop_videos": "Lire les vidéos en boucle",
   "loop_videos_description": "Si activé, les vidéos recommencent une fois terminées",
   "autoplay_videos": "Lire les vidéos automatiquement",
-  "autoplay_videos_description": "Si activé, les vidéos se lancent automatiquement"
+  "autoplay_videos_description": "Si activé, les vidéos se lancent automatiquement",
+  "export_accounts": "Exporter les comptes ?",
+  "export_accounts_details": "⚠\uFE0F Ceci exporte les cookies de connexion de vos comptes x.com. Ne partagez jamais cette sauvegarde.",
+  "import_backup": "Importer une sauvegarde"
 }

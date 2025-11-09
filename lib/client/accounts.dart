@@ -1,6 +1,8 @@
+import 'package:quax/database/entities.dart';
 import 'package:quax/database/repository.dart';
 
-Future<List<Map<String, Object?>>> getAccounts() async {
+Future<List<Account>> getAccounts() async {
   var database = await Repository.readOnly();
-  return database.query(tableAccounts);
+  var query = await database.query(tableAccounts);
+  return List.from(query).map((e) => Account.fromMap(e)).toList();
 }

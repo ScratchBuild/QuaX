@@ -21,6 +21,7 @@ class SettingsData {
   final List<SubscriptionGroup>? subscriptionGroups;
   final List<SubscriptionGroupMember>? subscriptionGroupMembers;
   final List<SavedTweet>? tweets;
+  final List<Account>? accounts;
 
   SettingsData(
       {required this.settings,
@@ -28,7 +29,8 @@ class SettingsData {
       required this.userSubscriptions,
       required this.subscriptionGroups,
       required this.subscriptionGroupMembers,
-      required this.tweets});
+      required this.tweets,
+      required this.accounts});
 
   factory SettingsData.fromJson(Map<String, dynamic> json) {
     return SettingsData(
@@ -45,7 +47,8 @@ class SettingsData {
         subscriptionGroupMembers: json['subscriptionGroupMembers'] != null
             ? List.from(json['subscriptionGroupMembers']).map((e) => SubscriptionGroupMember.fromMap(e)).toList()
             : null,
-        tweets: json['tweets'] != null ? List.from(json['tweets']).map((e) => SavedTweet.fromMap(e)).toList() : null);
+        tweets: json['tweets'] != null ? List.from(json['tweets']).map((e) => SavedTweet.fromMap(e)).toList() : null,
+        accounts: json['accounts'] != null ? List.from(json['accounts']).map((e) => Account.fromMap(e)).toList() : null);
   }
 
   Map<String, dynamic> toJson() {
@@ -55,8 +58,74 @@ class SettingsData {
       'subscriptions': userSubscriptions?.map((e) => e.toMap()).toList(),
       'subscriptionGroups': subscriptionGroups?.map((e) => e.toMap()).toList(),
       'subscriptionGroupMembers': subscriptionGroupMembers?.map((e) => e.toMap()).toList(),
-      'tweets': tweets?.map((e) => e.toMap()).toList()
+      'tweets': tweets?.map((e) => e.toMap()).toList(),
+      'accounts': accounts?.map((e) => e.toMap()).toList()
     };
+  }
+}
+
+Future<void> _importFromFile(BuildContext context, File file) async {
+  var content = jsonDecode(file.readAsStringSync());
+
+  var importModel = context.read<ImportDataModel>();
+  var groupModel = context.read<GroupsModel>();
+  var prefs = PrefService.of(context);
+
+  var data = SettingsData.fromJson(content);
+
+  var settings = data.settings;
+  if (settings != null) {
+    prefs.fromMap(settings);
+  }
+
+  var dataToImport = <String, List<ToMappable>>{};
+
+  var searchSubscriptions = data.searchSubscriptions;
+  if (searchSubscriptions != null) {
+    dataToImport[tableSearchSubscription] = searchSubscriptions;
+  }
+
+  var userSubscriptions = data.userSubscriptions;
+  if (userSubscriptions != null) {
+    dataToImport[tableSubscription] = userSubscriptions;
+  }
+
+  var subscriptionGroups = data.subscriptionGroups;
+  if (subscriptionGroups != null) {
+    dataToImport[tableSubscriptionGroup] = subscriptionGroups;
+  }
+
+  var subscriptionGroupMembers = data.subscriptionGroupMembers;
+  if (subscriptionGroupMembers != null) {
+    dataToImport[tableSubscriptionGroupMember] = subscriptionGroupMembers;
+  }
+
+  var tweets = data.tweets;
+  if (tweets != null) {
+    dataToImport[tableSavedTweet] = tweets;
+  }
+
+  var accounts = data.accounts;
+  if(accounts != null) {
+    dataToImport[tableAccounts] = accounts;
+  }
+
+  await importModel.importData(dataToImport);
+  await groupModel.reloadGroups();
+  context.mounted ? await context.read<SubscriptionsModel>().reloadSubscriptions() : null;
+  context.mounted ? await context.read<SubscriptionsModel>().refreshSubscriptionData() : null;
+
+  if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(L10n.of(context).data_imported_successfully),
+    ));
+  }
+}
+
+Future<void> importBackup(BuildContext context) async {
+  var path = await FlutterFileDialog.pickFile(params: const OpenFileDialogParams());
+  if (path != null && context.mounted) {
+    await _importFromFile(context, File(path));
   }
 }
 
@@ -65,59 +134,6 @@ class SettingsDataFragment extends StatelessWidget {
 
   const SettingsDataFragment({super.key});
 
-  Future<void> _importFromFile(BuildContext context, File file) async {
-    var content = jsonDecode(file.readAsStringSync());
-
-    var importModel = context.read<ImportDataModel>();
-    var groupModel = context.read<GroupsModel>();
-    var prefs = PrefService.of(context);
-
-    var data = SettingsData.fromJson(content);
-
-    var settings = data.settings;
-    if (settings != null) {
-      prefs.fromMap(settings);
-    }
-
-    var dataToImport = <String, List<ToMappable>>{};
-
-    var searchSubscriptions = data.searchSubscriptions;
-    if (searchSubscriptions != null) {
-      dataToImport[tableSearchSubscription] = searchSubscriptions;
-    }
-
-    var userSubscriptions = data.userSubscriptions;
-    if (userSubscriptions != null) {
-      dataToImport[tableSubscription] = userSubscriptions;
-    }
-
-    var subscriptionGroups = data.subscriptionGroups;
-    if (subscriptionGroups != null) {
-      dataToImport[tableSubscriptionGroup] = subscriptionGroups;
-    }
-
-    var subscriptionGroupMembers = data.subscriptionGroupMembers;
-    if (subscriptionGroupMembers != null) {
-      dataToImport[tableSubscriptionGroupMember] = subscriptionGroupMembers;
-    }
-
-    var tweets = data.tweets;
-    if (tweets != null) {
-      dataToImport[tableSavedTweet] = tweets;
-    }
-
-    await importModel.importData(dataToImport);
-    await groupModel.reloadGroups();
-    context.mounted ? await context.read<SubscriptionsModel>().reloadSubscriptions() : null;
-    context.mounted ? await context.read<SubscriptionsModel>().refreshSubscriptionData() : null;
-
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(L10n.of(context).data_imported_successfully),
-      ));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -125,12 +141,7 @@ class SettingsDataFragment extends StatelessWidget {
         leading: const Icon(Icons.import_export),
         title: Text(L10n.of(context).import),
         subtitle: Text(L10n.of(context).import_data_from_another_device),
-        onTap: () async {
-          var path = await FlutterFileDialog.pickFile(params: const OpenFileDialogParams());
-          if (path != null && context.mounted) {
-            await _importFromFile(context, File(path));
-          }
-        },
+        onTap: () => importBackup(context),
       ),
       PrefLabel(
         leading: const Icon(Icons.save),
