@@ -40,7 +40,7 @@ class TranslationAPI {
 
   static Future<TranslationAPIResult> translate(
       Locale locale, String id, List<String> text, String sourceLanguage) async {
-    var formData = {'id': id, 'dst_lang': locale.languageCode, 'content_type': 'POST'};
+    var formData = {'id': id, 'dst_lang': locale.toLanguageTag(), 'content_type': 'POST'};
 
     var key = 'translation.$sourceLanguage.$id';
 
