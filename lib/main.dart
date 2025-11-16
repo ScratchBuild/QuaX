@@ -191,7 +191,6 @@ Future<void> main() async {
   final prefService = await PrefServiceShared.init(prefix: 'pref_', defaults: {
     optionConfirmClose: true,
     optionDisableAnimations: false,
-    optionTextScaleFactor: 1.0,
     optionDisableScreenshots: false,
     optionDownloadPath: '',
     optionDownloadType: optionDownloadTypeAsk,
@@ -325,7 +324,6 @@ class _FritterAppState extends State<FritterApp> {
       _disableAnimations = prefService.get(optionDisableAnimations);
       _checkUpdates = prefService.get(optionShouldCheckForUpdates);
       _isSecure = prefService.get(optionDisableScreenshots);
-      _textScaleFactor = prefService.get(optionTextScaleFactor);
     });
 
     prefService.addKeyListener(optionShouldCheckForUpdates, () {
@@ -362,12 +360,6 @@ class _FritterAppState extends State<FritterApp> {
         _isSecure = prefService.get(optionDisableScreenshots);
       });
     });
-
-    prefService.addKeyListener(optionTextScaleFactor, () {
-      setState(() {
-        _textScaleFactor = prefService.get<double?>(optionTextScaleFactor) ?? 1.0;
-      });
-    });
   }
 
   @override
@@ -392,11 +384,7 @@ class _FritterAppState extends State<FritterApp> {
     final systemOverlayStyle = SystemUiOverlayStyle.dark.copyWith(systemNavigationBarColor: Colors.transparent);
     SystemChrome.setSystemUIOverlayStyle(systemOverlayStyle);
 
-    return MediaQuery(
-        data: MediaQuery.of(context).copyWith(
-          textScaler: TextScaler.linear(_textScaleFactor),
-        ),
-        child: DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
+    return DynamicColorBuilder(builder: (lightDynamic, darkDynamic) {
           return Portal(
               child: SecureWidget(
                   isSecure: _isSecure,
@@ -495,7 +483,7 @@ class _FritterAppState extends State<FritterApp> {
                           return child ?? Container();
                         },
                       )));
-        }));
+        });
   }
 }
 
