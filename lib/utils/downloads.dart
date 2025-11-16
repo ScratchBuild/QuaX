@@ -8,7 +8,6 @@ import 'package:quax/generated/l10n.dart';
 import 'package:quax/ui/errors.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as p;
-import 'package:permission_handler/permission_handler.dart';
 import 'package:pref/pref.dart';
 
 Future<void> downloadUriToPickedFile(BuildContext context, Uri uri, String fileName,
@@ -18,9 +17,6 @@ Future<void> downloadUriToPickedFile(BuildContext context, Uri uri, String fileN
   try {
     onStart();
     var responseTask = downloadFile(context, uri);
-
-    var storagePermission = await _requestStoragePermission(context);
-    if (!storagePermission) return;
 
     var response = await responseTask;
     if (response == null) {
@@ -49,33 +45,6 @@ Future<void> downloadUriToPickedFile(BuildContext context, Uri uri, String fileN
   } catch (e) {
     showSnackBar(context, icon: '🙊', message: e.toString());
   }
-}
-
-Future<bool> _requestStoragePermission(BuildContext context) async {
-  var status = await Permission.storage.status;  // Deprecated in Android 13+
-
-  if (Platform.isAndroid) {
-    status = await Permission.manageExternalStorage.request();
-  } else if (status.isDenied) {
-    status = await Permission.storage.request();
-  }
-
-  if (!status.isGranted) {
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(L10n.current.permission_not_granted),
-          action: SnackBarAction(
-            label: L10n.current.open_app_settings,
-            onPressed: openAppSettings,
-          ),
-        ),
-      );
-    }
-    return false;
-  }
-
-  return true;
 }
 
 class UnableToSaveMedia {
