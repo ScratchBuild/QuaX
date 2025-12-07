@@ -9,7 +9,10 @@
 
 <p align="center">
   <a href="https://github.com/teskann/quax/releases">
-    <img src="assets/readme/get-it-on-github.png" alt="Get it on GitHub" width="256">
+    <img src="assets/readme/get-it-on-github.png" alt="Get it on GitHub" height="100">
+  </a>
+  <a href="http://apps.obtainium.imranr.dev/redirect.html?r=obtainium://add/https://github.com/Teskann/QuaX">
+    <img src="assets/readme/get-it-on-obtainium.png" height="99">
   </a>
 </p>
 
