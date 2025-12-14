@@ -1026,18 +1026,18 @@ class Twitter {
 
     var filteredTweets = allTweets.where(includeTweet);
 
-    var globalTweets = Map.fromEntries(filteredTweets.map((e) {
+    var globalTweets = List.from(filteredTweets.map((e) {
       var elm = e['content']['itemContent']['tweet_results']['result'];
-      if (elm['rest_id'] == null) {
+      if (elm['rest_id'] == null && elm['tweet'] != null) {
         elm = elm['tweet'];
       }
 
-      return MapEntry(elm['rest_id'].toString(), elm);
+      return elm;
     }));
 
     var tweets = [];
     try {
-      tweets = globalTweets.values.map((e) => TweetWithCard.fromGraphqlJson(e)).toList();
+      tweets = globalTweets.map((e) => TweetWithCard.fromGraphqlJson(e)).toList();
     } catch (exc) {
       rethrow;
     }
