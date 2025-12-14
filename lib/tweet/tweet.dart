@@ -63,6 +63,43 @@ class TweetTileState extends State<TweetTile> with SingleTickerProviderStateMixi
   List<RichTextPart> _displayParts = [];
   List<RichTextPart> _translatedParts = [];
 
+  bool _isInitialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    clickable = widget.clickable;
+    currentUsername = widget.currentUsername;
+    tweet = widget.tweet;
+    isPinned = widget.isPinned;
+    isThread = widget.isThread;
+    addSeparator = widget.addSeparator;
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    
+    if (!_isInitialized) {
+      _initializeTweetParts();
+      _isInitialized = true;
+    }
+  }
+
+  void _initializeTweetParts() {
+    // This is some super long text that I think only Twitter Blue users can write
+    var noteText = tweet.retweetedStatusWithCard?.noteText ?? tweet.noteText;
+    // get the longest tweet
+    var tweetTextFinal = noteText ?? actualTweet().fullText ?? actualTweet().text!;
+
+    List<RichTextPart> tweetParts = buildRichText(context, tweetTextFinal, actualTweet().entities);
+    setState(() {
+      _displayParts = tweetParts;
+      _originalParts = tweetParts;
+    });
+  }
+
   Future<void> onClickTranslate(Locale locale) async {
     // If we've already translated this text before, use those results instead of translating again
     if (_translatedParts.isNotEmpty) {
@@ -123,32 +160,6 @@ class TweetTileState extends State<TweetTile> with SingleTickerProviderStateMixi
     }
 
     return translatedParts;
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    clickable = widget.clickable;
-    currentUsername = widget.currentUsername;
-    tweet = widget.tweet;
-    isPinned = widget.isPinned;
-    isThread = widget.isThread;
-    addSeparator = widget.addSeparator;
-
-    // Get the text to display from the actual tweet, i.e. the retweet if there is one, otherwise we end up with "RT @" crap in our text
-    var actualTweet = tweet.retweetedStatusWithCard ?? tweet;
-
-    // This is some super long text that I think only Twitter Blue users can write
-    var noteText = tweet.retweetedStatusWithCard?.noteText ?? tweet.noteText;
-    // get the longest tweet
-    var tweetTextFinal = noteText ?? actualTweet.fullText ?? actualTweet.text!;
-
-    List<RichTextPart> tweetParts = buildRichText(context, tweetTextFinal, actualTweet.entities);
-    setState(() {
-      _displayParts = tweetParts;
-      _originalParts = tweetParts;
-    });
   }
 
   _createFooterIconButton(IconData icon, [Color? color, double? fill, Function()? onPressed]) {
@@ -571,6 +582,11 @@ class TweetTileState extends State<TweetTile> with SingleTickerProviderStateMixi
                 color: addSeparator ? theme.colorScheme.surfaceBright.withAlpha(150) : Colors.transparent,
               ),
             ]));
+  }
+
+  TweetWithCard actualTweet() {
+    // Get the text to display from the actual tweet, i.e. the retweet if there is one, otherwise we end up with "RT @" crap in our text
+    return tweet.retweetedStatusWithCard ?? tweet;
   }
 }
 
