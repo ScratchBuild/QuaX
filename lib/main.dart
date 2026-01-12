@@ -220,6 +220,7 @@ Future<void> main() async {
     optionShowNavigationLabels: false,
     optionTweetsHideSensitive: true,
     optionUseAbsoluteTimestamp: false,
+    optionDefaultProfileTab: profileTabs[0].id.name,
     optionUserTrendsLocations: jsonEncode({
       'active': {'name': 'Worldwide', 'woeid': 1},
       'locations': [
@@ -517,56 +518,42 @@ class _DefaultPageState extends State<DefaultPage> {
   StreamSubscription<Uri>? _sub;
 
   void handleInitialLink(Uri link) {
-    // Assume it's a username if there's only one segment (or two segments with the second empty, meaning the URI ends with /)
-    if (link.pathSegments.length == 1 || (link.pathSegments.length == 2 && link.pathSegments.last.isEmpty)) {
-      Navigator.pushNamed(context, routeProfile,
-          arguments: ProfileScreenArguments.fromScreenName(link.pathSegments.first));
-      return;
-    }
-
-    if (link.pathSegments.length == 2) {
-      var secondSegment = link.pathSegments[1];
-
-      // https://twitter.com/i/redirect?url=https%3A%2F%2Ftwitter.com%2Fi%2Ftopics%2Ftweet%2F1447290060123033601
-      if (secondSegment == 'redirect') {
-        // This is a redirect URL, so we should extract it and use that as our initial link instead
-        var redirect = link.queryParameters['url'];
-        if (redirect == null) {
-          // TODO
-          return;
-        }
-
-        handleInitialLink(Uri.parse(redirect));
+    final parsed = parseUri(link);
+    switch (parsed) {
+      case ProfileUriInfo(screenName: final screenName, profileTabIndex: final tab):
+        Navigator.pushNamed(context, routeProfile,
+            arguments: ProfileScreenArguments.fromScreenName(screenName, tab));
         return;
-      }
-    }
-
-    if (link.pathSegments.length == 3) {
-      var segment2 = link.pathSegments[1];
-      if (segment2 == 'status') {
-        // Assume it's a tweet
-        var username = link.pathSegments[0];
-        var statusId = link.pathSegments[2];
-
+      case PostUriInfo(screenName: final screenName, id: final id, direct: final direct, photoNumber: final photoNumber):
         Navigator.pushNamed(context, routeStatus,
             arguments: StatusScreenArguments(
-              id: statusId,
-              username: username,
+              id: id,
+              username: screenName,
             ));
         return;
-      }
-    }
+      case UnknownResult():
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              icon: Icon(Icons.error),
+              title: Text(L10n.of(context).unable_to_open_link),
+              content: Text(L10n.of(context).unable_to_open_link_details),
+              actions: [
+                TextButton(
+                  child: Text(L10n.of(context).report),
+                  onPressed:  () => openUri('https://github.com/teskann/quax/issues'),
+                ),
+                TextButton(
+                  child: Text(L10n.of(context).close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          },
+        );
 
-    if (link.pathSegments.length == 4) {
-      var segment2 = link.pathSegments[1];
-      var segment3 = link.pathSegments[2];
-      var segment4 = link.pathSegments[3];
-
-      // https://twitter.com/i/topics/tweet/1447290060123033601
-      if (segment2 == 'topics' && segment3 == 'tweet') {
-        Navigator.pushNamed(context, routeStatus, arguments: StatusScreenArguments(id: segment4, username: null));
         return;
-      }
     }
   }
 

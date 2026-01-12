@@ -92,7 +92,7 @@ class UserTile extends StatelessWidget {
       subtitle: Text('@${user.screenName}', maxLines: 1, overflow: TextOverflow.ellipsis),
       trailing: FollowButton(user: user),
       onTap: () {
-        Navigator.pushNamed(context, routeProfile, arguments: ProfileScreenArguments(user.id, user.screenName));
+        Navigator.pushNamed(context, routeProfile, arguments: ProfileScreenArguments(user.id, user.screenName, null));
       },
     );
   }

@@ -40,6 +40,7 @@ const optionSubscriptionGroupsOrderByField = 'subscription_groups.order_by.field
 const optionSubscriptionOrderByAscending = 'subscription.order_by.ascending';
 const optionSubscriptionOrderCustom = 'subscription.order_by.custom';
 const optionSubscriptionOrderByField = 'subscription.order_by.field';
+const optionDefaultProfileTab = 'subscription.default_tab';
 
 const optionThemeMode = 'theme.mode';
 const optionThemeColor = 'theme.color';

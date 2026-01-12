@@ -106,7 +106,7 @@ List _parseMentionsAndHashtags(BuildContext context, String content) {
       onTap = () async {
         Navigator.pushNamed(context, routeProfile,
             arguments:
-                ProfileScreenArguments.fromScreenName(full.substring(1)));
+                ProfileScreenArguments.fromScreenName(full.substring(1), null));
       };
     }
     contentWidgets.add(TextSpan(
@@ -164,7 +164,7 @@ List<Entity> _parseEntities(BuildContext context, dynamic newEntities) {
           mention,
           () => Navigator.pushNamed(context, routeProfile,
               arguments:
-                  ProfileScreenArguments(mention.idStr, mention.screenName))));
+                  ProfileScreenArguments(mention.idStr, mention.screenName, null))));
     }
   }
 

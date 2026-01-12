@@ -20,18 +20,35 @@ import 'package:pref/pref.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 
+typedef TabTitleBuilder = String Function(BuildContext context);
+
+class NavigationTab {
+  final ProfileTabs id;
+  final TabTitleBuilder titleBuilder;
+
+  NavigationTab(this.id, this.titleBuilder);
+}
+
+final List<NavigationTab> profileTabs = [
+  NavigationTab(ProfileTabs.posts, (c) => L10n.of(c).tweets),
+  NavigationTab(ProfileTabs.postsAndReplies, (c) => L10n.of(c).tweets_and_replies),
+  NavigationTab(ProfileTabs.media, (c) => L10n.of(c).media),
+  NavigationTab(ProfileTabs.saved, (c) => L10n.of(c).saved),
+];
+
 class ProfileScreenArguments {
   final String? id;
   final String? screenName;
+  final int? tabIndex;
 
-  ProfileScreenArguments(this.id, this.screenName);
+  ProfileScreenArguments(this.id, this.screenName, this.tabIndex);
 
-  factory ProfileScreenArguments.fromId(String id) {
-    return ProfileScreenArguments(id, null);
+  factory ProfileScreenArguments.fromId(String id, int? tabIndex) {
+    return ProfileScreenArguments(id, null, tabIndex);
   }
 
-  factory ProfileScreenArguments.fromScreenName(String screenName) {
-    return ProfileScreenArguments(null, screenName);
+  factory ProfileScreenArguments.fromScreenName(String screenName, int? tabIndex) {
+    return ProfileScreenArguments(null, screenName, tabIndex);
   }
 }
 
@@ -46,15 +63,16 @@ class ProfileScreen extends StatelessWidget {
         create: (context) {
           return ProfileModel()..loadProfileByScreenName(args.screenName!);
         },
-        child: _ProfileScreen(id: args.id, screenName: args.screenName));
+        child: _ProfileScreen(id: args.id, screenName: args.screenName, tabIndex: args.tabIndex));
   }
 }
 
 class _ProfileScreen extends StatelessWidget {
   final String? id;
   final String? screenName;
+  final int? tabIndex;
 
-  const _ProfileScreen({required this.id, required this.screenName});
+  const _ProfileScreen({required this.id, required this.screenName, required this.tabIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +92,7 @@ class _ProfileScreen extends StatelessWidget {
           },
         ),
         onLoading: (_) => const Center(child: CircularProgressIndicator()),
-        onState: (_, state) => ProfileScreenBody(profile: state),
+        onState: (_, state) => ProfileScreenBody(profile: state, defaultTabIndex: tabIndex),
       ),
     );
   }
@@ -82,8 +100,9 @@ class _ProfileScreen extends StatelessWidget {
 
 class ProfileScreenBody extends StatefulWidget {
   final Profile profile;
+  final int? defaultTabIndex;
 
-  const ProfileScreenBody({super.key, required this.profile});
+  const ProfileScreenBody({super.key, required this.profile, required this.defaultTabIndex});
 
   @override
   State<StatefulWidget> createState() => _ProfileScreenBodyState();
@@ -119,13 +138,22 @@ class _ProfileScreenBodyState extends State<ProfileScreenBody> with TickerProvid
       nestedScrollViewState.innerController.addListener(_listen);
     });
 
-    _tabController = TabController(length: 4, vsync: this);
 
     var description = widget.profile.user.description;
     if (description == null || description.isEmpty) {
       descriptionHeight = 0;
       descriptionResized = true;
     }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    ProfileTabs defaultProfileTab = ProfileTabs.values.byName(PrefService.of(context).get(optionDefaultProfileTab));
+    final int initialTabIdx = widget.defaultTabIndex ?? profileTabs.indexWhere((e) => e.id == defaultProfileTab);
+
+    _tabController = TabController(length: 4, vsync: this, initialIndex: initialTabIdx);
   }
 
   @override
@@ -225,33 +253,16 @@ class _ProfileScreenBodyState extends State<ProfileScreenBody> with TickerProvid
                       backgroundColor: theme.colorScheme.surface,
                       flexibleSpace: TabBar(
                         controller: _tabController,
-                        tabs: [
-                          Tab(
-                            child: Text(
-                              L10n.of(context).tweets,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Tab(
-                            child: Text(
-                              L10n.of(context).tweets_and_replies,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Tab(
-                            child: Text(
-                              L10n.of(context).media,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Tab(
-                            child: Text(
-                              L10n.of(context).saved,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                        ],
-                        dividerColor: Theme.of(context).colorScheme.surfaceBright.withAlpha(150),
+                        tabs: profileTabs.map((t) =>
+                            Tab(
+                                child: Text(t.titleBuilder(context),
+                                  textAlign: TextAlign.center,
+                                ))).toList(),
+                        dividerColor: Theme
+                            .of(context)
+                            .colorScheme
+                            .surfaceBright
+                            .withAlpha(150),
                       )),
                   flexibleSpace: FlexibleSpaceBar(
                     centerTitle: true,

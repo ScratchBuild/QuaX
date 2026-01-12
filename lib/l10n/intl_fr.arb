@@ -536,5 +536,9 @@
   "disable_warnings_for_unrelated_posts_in_feed_description": "Il arrive que X ajoute des posts à votre fil émanant de personnes que vous ne suivez pas. QuaX montre une fenêtre d'aversissement en cas de problèmes",
   "never_show_again": "Ne plus afficher ce message",
   "unknown_username": "Nom d'utilisateur inconnu",
-  "clickToShowMore": "Voir plus"
+  "clickToShowMore": "Voir plus",
+  "default_profile_tab": "Onglet par défaut des profils",
+  "default_profile_tab_description": "Onglet actif à l'ouverture d'un profil",
+  "unable_to_open_link": "Impossible d'ouvrir le lien",
+  "unable_to_open_link_details": "QuaX n'a pas été en mesure d'ouvrir le lien sur lequel vous avez cliqué. Soit lien est invalide, soit il s'agit d'une erreur qui devrait être signalée."
 }

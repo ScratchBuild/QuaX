@@ -4,6 +4,7 @@ import 'package:flutter_localized_locales/flutter_localized_locales.dart';
 import 'package:quax/constants.dart';
 import 'package:quax/generated/l10n.dart';
 import 'package:quax/home/home_screen.dart';
+import 'package:quax/profile/profile.dart';
 import 'package:quax/utils/iterables.dart';
 import 'package:logging/logging.dart';
 import 'package:pref/pref.dart';
@@ -239,6 +240,16 @@ class SettingsGeneralFragment extends StatelessWidget {
             subtitle: Text(L10n.of(context).always_show_full_tweet_contents_description),
             pref: alwaysShowFullTweetContents,
           ),
+          PrefDropdown(
+              fullWidth: false,
+              title: Text(L10n.of(context).default_profile_tab),
+              subtitle: Text(
+                L10n.of(context).default_profile_tab_description,
+              ),
+              pref: optionDefaultProfileTab,
+              items: profileTabs
+                  .map((e) => DropdownMenuItem(value: e.id.name, child: Text(e.titleBuilder(context))))
+                  .toList()),
         ]),
       ),
     );

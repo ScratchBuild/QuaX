@@ -465,6 +465,10 @@
   "never_show_again": "Never show again",
   "unknown_username": "Unknown username",
   "always_show_full_tweet_contents": "Always show full tweet contents",
-  "always_show_full_tweet_contents_description": "Always show the full contents of a tweet, even if it's long, without the \"Show more\" button"
+  "always_show_full_tweet_contents_description": "Always show the full contents of a tweet, even if it's long, without the \"Show more\" button",
+  "default_profile_tab": "Default profile tab",
+  "default_profile_tab_description": "Which tab is shown when a profile opens",
+  "unable_to_open_link": "Unable to open link",
+  "unable_to_open_link_details": "The link you clicked could not be opened in QuaX. Either the link is actually invalid or this is an error that should be reported."
 }
 
