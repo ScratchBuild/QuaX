@@ -11,7 +11,7 @@ enum ProfileTabs { posts, postsAndReplies, media, saved }
 
 class ProfileUriInfo extends UriParseResult {
   String screenName;
-  late int? profileTabIndex;
+  int? profileTabIndex;
 
   ProfileUriInfo(this.screenName, ProfileTabs? tab) {
     if (tab != null) {
